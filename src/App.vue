@@ -1,5 +1,7 @@
 <template>
   <div class = "app">
+    <NavigationBar />
+    
     <div v-if="state.account.username">안녕하세요. {{state.account.id}} 번, {{ state.account.username }} 님 !
       <button @click="logout">로그아웃</button>
     </div>
@@ -20,8 +22,15 @@
 
 <script>
 import axios from "axios";
-import {reactive} from "vue";
+import { reactive } from "vue";
+
+import NavigationBar from './components/NavigationBar.vue'
+
 export default {
+  components: {
+    NavigationBar
+  },
+
   setup(){
     const state = reactive({
       account:{
@@ -50,9 +59,9 @@ export default {
       axios.get("/api/Login/logout").then();
     };
 
-    axios.get("/api/Login/detail").then((res)=>{
-      state.account = res.data;
-    });
+    // axios.get("/api/Login/detail").then((res)=>{
+    //   state.account = res.data;
+    // });
 
     return {state, submit, logout};
   },
