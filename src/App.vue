@@ -1,7 +1,8 @@
 <template>
   <div class = "app">
     <NavigationBar />
-    
+    <Button label="Submit" />
+
     
   </div>
 </template>
@@ -9,12 +10,14 @@
 <script>
 // import axios from "axios";
 import { reactive } from "vue";
+import Button from 'primevue/button';
 
 import NavigationBar from './components/NavigationBar.vue'
 
 export default {
   components: {
-    NavigationBar
+    NavigationBar,
+    Button
   },
 
   setup(){
