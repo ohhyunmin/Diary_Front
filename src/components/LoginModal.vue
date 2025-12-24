@@ -75,12 +75,15 @@ export default {
     },
     handleSubmit() {
       this.$emit('login', { ...this.loginForm })
+      
       // 폼 초기화
       this.loginForm = {
         email: '',
         password: '',
         remember: false
       }
+
+      this.$emit('close')
     }
   },
   watch: {

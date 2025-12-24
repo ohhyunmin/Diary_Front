@@ -3,7 +3,7 @@
     <div class="nav-container">
       <!-- 로고 -->
       <div class="nav-logo">
-        <a href="/">MyApp</a>
+        <a href="/">Diary</a>
       </div>
 
       <!-- 네비게이션 메뉴 -->
@@ -21,7 +21,12 @@
           <a href="/contact" class="nav-link" :class="{ active: currentRoute === '/contact' }" @click="closeMenu">Contact</a>
         </li>
         <li class="nav-item">
-          <button class="nav-btn" @click="openLogin">로그인</button>
+          <div v-if="loginForm.email">안녕하세요. {{loginForm.email}} 님 !
+            <button class="nav-btn" @click="logout">로그아웃</button>
+          </div>
+          <div v-else>
+            <button class="nav-btn" @click="openLogin">로그인</button>
+          </div>
         </li>
       </ul>
     </div>
@@ -30,6 +35,7 @@
   <LoginModal 
       :show="showLoginModal" 
       @close="closeModal"
+      @login="login"
     />
   
 </template>
@@ -64,6 +70,14 @@ export default {
     },
     closeModal() {
       this.showLoginModal = false
+    },
+    logout(){
+      this.loginForm.email = '';
+      this.loginForm.password = '';
+      this.loginForm.remember = '';
+    },
+    login(data){
+      this.loginForm = data
     }
   },
   components: {
@@ -87,7 +101,7 @@ export default {
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
