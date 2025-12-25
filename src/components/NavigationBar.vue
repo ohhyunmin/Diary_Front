@@ -3,22 +3,22 @@
     <div class="nav-container">
       <!-- 로고 -->
       <div class="nav-logo">
-        <a href="/">Diary</a>
+        <a href="#" @click.prevent="navigateTo('/')">Diary</a>
       </div>
 
       <!-- 네비게이션 메뉴 -->
       <ul class="nav-menu" :class="{ active: isMenuOpen }">
         <li class="nav-item">
-          <a href="/" class="nav-link" :class="{ active: currentRoute === '/' }" @click="closeMenu">Home</a>
+          <a href="#" class="nav-link" :class="{ active: currentRoute === '/' }" @click.prevent="navigateTo('/')">Home</a>
         </li>
         <li class="nav-item">
-          <a href="/about" class="nav-link" :class="{ active: currentRoute === '/about' }" @click="closeMenu">About</a>
+          <a href="#" class="nav-link" :class="{ active: currentRoute === '/card' }" @click.prevent="navigateTo('/card')">About</a>
         </li>
         <li class="nav-item">
-          <a href="/services" class="nav-link" :class="{ active: currentRoute === '/services' }" @click="closeMenu">Services</a>
+          <a href="#" class="nav-link" :class="{ active: currentRoute === '/services' }" @click.prevent="navigateTo('/services')">Services</a>
         </li>
         <li class="nav-item">
-          <a href="/contact" class="nav-link" :class="{ active: currentRoute === '/contact' }" @click="closeMenu">Contact</a>
+          <a href="#" class="nav-link" :class="{ active: currentRoute === '/contact' }" @click.prevent="navigateTo('/contact')">Contact</a>
         </li>
         <li class="nav-item">
           <div v-if="loginForm.email">안녕하세요. {{loginForm.email}} 님 !
@@ -63,6 +63,11 @@ export default {
     },
     closeMenu() {
       this.isMenuOpen = false
+    },
+    navigateTo(route) {
+      this.currentRoute = route;
+      this.closeMenu();
+      this.$emit('route-change', route);
     },
     openLogin() {
       this.showLoginModal = true

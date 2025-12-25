@@ -1,23 +1,23 @@
 <template>
   <div class = "app">
-    <NavigationBar />
-    <Button label="Submit" />
-
-    
+    <NavigationBar @route-change="handleRouteChange" />
+    <HomePage v-if="state.currentRoute === '/'" />
+    <CardPage v-if="state.currentRoute === '/about'" />
   </div>
 </template>
 
 <script>
 // import axios from "axios";
 import { reactive } from "vue";
-import Button from 'primevue/button';
-
 import NavigationBar from './components/NavigationBar.vue'
+import CardPage from './components/CardPage.vue'
+import HomePage from './components/HomePage.vue'
 
 export default {
   components: {
     NavigationBar,
-    Button
+    CardPage,
+    HomePage
   },
 
   setup(){
@@ -25,8 +25,13 @@ export default {
       form:{
         loginId:"",
         loginPw:""
-      }
+      },
+      currentRoute: '/'
     });
+
+    const handleRouteChange = (route) => {
+      state.currentRoute = route;
+    };
 
     // const submit = () =>{
       
@@ -48,7 +53,10 @@ export default {
     //   state.account = res.data;
     // });
 
-    return {state};
+    return {
+      state,
+      handleRouteChange
+    };
   },
 };
 </script>
