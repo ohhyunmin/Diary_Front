@@ -6,7 +6,7 @@
         <Button 
           label="글쓰기" 
           icon="pi pi-pencil" 
-          @click="openWriteModal"
+          @click="goToWrite"
           class="write-btn"
         />
       </div>
@@ -40,60 +40,6 @@
         </template>
       </Card>
     </div>
-
-    <!-- 글쓰기 모달 -->
-    <Dialog 
-      v-model:visible="showWriteModal" 
-      modal 
-      header="글쓰기" 
-      :style="{ width: '50rem' }"
-      :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
-    >
-      <div class="write-form">
-        <div class="field">
-          <label for="title">제목</label>
-          <InputText 
-            id="title" 
-            v-model="newPost.title" 
-            class="w-full"
-            placeholder="제목을 입력하세요"
-          />
-        </div>
-        <div class="field">
-          <label for="author">작성자</label>
-          <InputText 
-            id="author" 
-            v-model="newPost.author" 
-            class="w-full"
-            placeholder="작성자를 입력하세요"
-          />
-        </div>
-        <div class="field">
-          <label for="content">내용</label>
-          <Textarea 
-            id="content" 
-            v-model="newPost.content" 
-            rows="10" 
-            class="w-full"
-            placeholder="내용을 입력하세요"
-          />
-        </div>
-      </div>
-      <template #footer>
-        <Button 
-          label="취소" 
-          icon="pi pi-times" 
-          @click="closeWriteModal" 
-          severity="secondary"
-        />
-        <Button 
-          label="등록" 
-          icon="pi pi-check" 
-          @click="submitPost" 
-          autofocus
-        />
-      </template>
-    </Dialog>
 
     <!-- 글 읽기 모달 -->
     <Dialog 
@@ -136,14 +82,12 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import Textarea from 'primevue/textarea';
 import Divider from 'primevue/divider';
 
 export default {
@@ -154,21 +98,19 @@ export default {
     Column,
     Button,
     Dialog,
-    InputText,
-    Textarea,
     Divider
   },
-  setup() {
+  props: {
+    newPost: {
+      type: Object,
+      default: null
+    }
+  },
+  emits: ['navigate'],
+  setup(props, { emit }) {
     const posts = ref([]);
-    const showWriteModal = ref(false);
     const showReadModal = ref(false);
     const selectedPost = ref(null);
-    
-    const newPost = ref({
-      title: '',
-      author: '',
-      content: ''
-    });
 
     // 샘플 게시글 데이터
     const initializePosts = () => {
@@ -200,44 +142,8 @@ export default {
       ];
     };
 
-    const openWriteModal = () => {
-      newPost.value = {
-        title: '',
-        author: '',
-        content: ''
-      };
-      showWriteModal.value = true;
-    };
-
-    const closeWriteModal = () => {
-      showWriteModal.value = false;
-      newPost.value = {
-        title: '',
-        author: '',
-        content: ''
-      };
-    };
-
-    const submitPost = () => {
-      if (!newPost.value.title || !newPost.value.author || !newPost.value.content) {
-        alert('모든 항목을 입력해주세요.');
-        return;
-      }
-
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0];
-      
-      const post = {
-        id: posts.value.length > 0 ? Math.max(...posts.value.map(p => p.id)) + 1 : 1,
-        title: newPost.value.title,
-        author: newPost.value.author,
-        date: dateStr,
-        views: 0,
-        content: newPost.value.content
-      };
-
-      posts.value.unshift(post);
-      closeWriteModal();
+    const goToWrite = () => {
+      emit('navigate', '/boardWrite');
     };
 
     const readPost = (post) => {
@@ -255,15 +161,19 @@ export default {
       initializePosts();
     });
 
+    // props.newPost가 변경되면 새 글 추가
+    watch(() => props.newPost, (newPost) => {
+      if (newPost) {
+        const newId = posts.value.length > 0 ? Math.max(...posts.value.map(p => p.id)) + 1 : 1;
+        posts.value.unshift({ ...newPost, id: newId });
+      }
+    }, { immediate: false });
+
     return {
       posts,
-      showWriteModal,
       showReadModal,
       selectedPost,
-      newPost,
-      openWriteModal,
-      closeWriteModal,
-      submitPost,
+      goToWrite,
       readPost,
       closeReadModal
     };
