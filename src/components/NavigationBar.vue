@@ -12,10 +12,10 @@
           <a href="#" class="nav-link" :class="{ active: currentRoute === '/' }" @click.prevent="navigateTo('/')">Home</a>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link" :class="{ active: currentRoute === '/card' }" @click.prevent="navigateTo('/card')">About</a>
+          <a href="#" class="nav-link" :class="{ active: currentRoute === '/cardPage' }" @click.prevent="navigateTo('/cardPage')">cardPage</a>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link" :class="{ active: currentRoute === '/services' }" @click.prevent="navigateTo('/services')">Services</a>
+          <a href="#" class="nav-link" :class="{ active: currentRoute === '/boardPage' }" @click.prevent="navigateTo('/boardPage')">boardPage</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link" :class="{ active: currentRoute === '/contact' }" @click.prevent="navigateTo('/contact')">Contact</a>
@@ -42,6 +42,7 @@
 
 <script>
 import LoginModal from './LoginModal.vue'
+// import axios from "axios";
 
 export default {
   name: 'NavigationBar',
@@ -80,6 +81,9 @@ export default {
       this.loginForm.email = '';
       this.loginForm.password = '';
       this.loginForm.remember = '';
+      // const logout = () =>{
+    //   axios.get("/api/Login/logout").then();
+    // };
     },
     login(data){
       this.loginForm = data

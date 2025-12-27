@@ -23,35 +23,54 @@
         </div>
       </div>
     </div>
+
+    <div class="calendar-section">
+      <Card class="calendar-card">
+        <template #title>
+          <h2>일정 캘린더</h2>
+        </template>
+        <template #content>
+          <FullCalendar :options="calendarOptions" />
+        </template>
+      </Card>
+    </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue';
+import Card from 'primevue/card';
+import FullCalendar from '@fullcalendar/vue3';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 
 export default {
   name: 'HomePage',
+  components: {
+    Card,
+    FullCalendar
+  },
   setup() {
     const images = ref([
       {
-        url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop',
-        alt: '산 풍경'
+        url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1200&h=600&fit=crop',
+        alt: '아이와 놀이'
       },
       {
-        url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&h=600&fit=crop',
-        alt: '자연 풍경'
+        url: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1200&h=600&fit=crop',
+        alt: '행복한 아이'
       },
       {
-        url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=600&fit=crop',
-        alt: '숲 풍경'
+        url: 'https://images.unsplash.com/photo-1476703993599-0035a21b17a9?w=1200&h=600&fit=crop',
+        alt: '아이의 일상'
       },
       {
-        url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=600&fit=crop',
-        alt: '바다 풍경'
+        url: 'https://images.unsplash.com/photo-1445633629932-0029acc44e88?w=1200&h=600&fit=crop',
+        alt: '아이의 성장'
       },
       {
-        url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=600&fit=crop',
-        alt: '호수 풍경'
+        url: 'https://images.unsplash.com/photo-1519689373023-dd07c7988603?w=1200&h=600&fit=crop',
+        alt: '아이의 순간'
       }
     ]);
 
@@ -89,11 +108,55 @@ export default {
       }
     });
 
+    // FullCalendar 옵션
+    const events = ref([
+      {
+        title: '일정 1',
+        start: new Date(),
+        color: '#42b983'
+      },
+      {
+        title: '일정 2',
+        start: new Date(Date.now() + 86400000), // 내일
+        color: '#359268'
+      }
+    ]);
+
+    const calendarOptions = ref({
+      plugins: [dayGridPlugin, interactionPlugin],
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth'
+      },
+      events: events.value,
+      editable: true,
+      selectable: true,
+      eventClick: (info) => {
+        alert('이벤트: ' + info.event.title);
+      },
+      dateClick: (info) => {
+        const title = prompt('일정 제목을 입력하세요:');
+        if (title) {
+          events.value.push({
+            title: title,
+            start: info.dateStr,
+            color: '#42b983'
+          });
+          // calendarOptions의 events 업데이트
+          calendarOptions.value.events = [...events.value];
+        }
+      }
+    });
+
     return {
       images,
       currentImageIndex,
       nextImage,
-      goToImage
+      goToImage,
+      calendarOptions,
+      events
     };
   }
 };
@@ -185,6 +248,53 @@ export default {
 
   .indicator.active {
     width: 25px;
+  }
+}
+
+.calendar-section {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calendar-card {
+  margin-top: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-card h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+/* FullCalendar 기본 스타일 */
+:deep(.fc) {
+  font-family: inherit;
+}
+
+:deep(.fc-header-toolbar) {
+  margin-bottom: 1.5em;
+}
+
+:deep(.fc-button) {
+  background-color: #42b983;
+  border-color: #42b983;
+}
+
+:deep(.fc-button:hover) {
+  background-color: #359268;
+  border-color: #359268;
+}
+
+:deep(.fc-button-primary:not(:disabled).fc-button-active) {
+  background-color: #359268;
+  border-color: #359268;
+}
+
+@media (max-width: 768px) {
+  .calendar-section {
+    padding: 1rem;
   }
 }
 </style>

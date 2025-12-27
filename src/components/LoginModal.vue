@@ -52,6 +52,8 @@
 </template>
 
 <script>
+  // import axios from "axios";
+  
 export default {
   name: 'LoginModal',
   props: {
@@ -74,6 +76,9 @@ export default {
       this.$emit('close')
     },
     handleSubmit() {
+      // axios.post("/api/Login", args).then((res)=>{
+      //   state.account = res.data;
+      // });
       this.$emit('login', { ...this.loginForm })
       
       // 폼 초기화
