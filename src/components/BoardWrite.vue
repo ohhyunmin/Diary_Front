@@ -196,7 +196,7 @@ export default {
         images: formData.value.images.map(img => img.url)
       };
 
-      emit('submit', post);
+      emit('registerPost', post);
     };
 
     const goToList = () => {

@@ -12,6 +12,7 @@
       v-if="state.currentRoute === '/boardWrite'"
       @submit="handlePostSubmit"
       @cancel="handleRouteChange('/boardPage')"
+      @registerPost="registerPost"
     />
   </div>
 </template>
@@ -54,10 +55,15 @@ export default {
       handleRouteChange('/boardPage');
     };
 
+    const registerPost = () => {
+      handleRouteChange('/boardPage');
+    };
+
     return {
       state,
       handleRouteChange,
-      handlePostSubmit
+      handlePostSubmit,
+      registerPost
     };
   },
 };

@@ -5,7 +5,7 @@
         <button class="modal-close" @click="closeModal">&times;</button>
         
         <div class="modal-header">
-          <h2>Welcome Back</h2>
+          <h2>Welcome Diary</h2>
           <p>Please login to your account</p>
         </div>
 
@@ -74,6 +74,13 @@ export default {
   methods: {
     closeModal() {
       this.$emit('close')
+
+      // 폼 초기화
+      this.loginForm = {
+        email: '',
+        password: '',
+        remember: false
+      }
     },
     handleSubmit() {
       // axios.post("/api/Login", args).then((res)=>{

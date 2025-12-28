@@ -68,7 +68,7 @@ export default {
     navigateTo(route) {
       this.currentRoute = route;
       this.closeMenu();
-      this.$emit('route-change', route);
+      this.$emit('route-change', route);  
     },
     openLogin() {
       this.showLoginModal = true
