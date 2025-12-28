@@ -89,6 +89,7 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
+// import axios from 'axios';
 
 export default {
   name: 'BoardPage',
@@ -114,32 +115,40 @@ export default {
 
     // 샘플 게시글 데이터
     const initializePosts = () => {
-      posts.value = [
-        {
-          id: 1,
-          title: '첫 번째 게시글입니다',
-          author: '홍길동',
-          date: '2024-01-15',
-          views: 42,
-          content: '첫 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
-        },
-        {
-          id: 2,
-          title: '두 번째 게시글입니다',
-          author: '김철수',
-          date: '2024-01-14',
-          views: 35,
-          content: '두 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
-        },
-        {
-          id: 3,
-          title: '세 번째 게시글입니다',
-          author: '이영희',
-          date: '2024-01-13',
-          views: 28,
-          content: '세 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
-        }
-      ];
+      
+      // axios.get('/api/Board/list').then(response => {
+      //   if (response.status === 200) {
+      //     posts.value = response.data;
+      //   }
+      //   else{
+          posts.value = [
+          {
+            id: 1,
+            title: '첫 번째 게시글입니다',
+            author: '홍길동',
+            date: '2024-01-15',
+            views: 42,
+            content: '첫 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
+          },
+          {
+            id: 2,
+            title: '두 번째 게시글입니다',
+            author: '김철수',
+            date: '2024-01-14',
+            views: 35,
+            content: '두 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
+          },
+          {
+            id: 3,
+            title: '세 번째 게시글입니다',
+            author: '이영희',
+            date: '2024-01-13',
+            views: 28,
+            content: '세 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
+          }
+        ];
+        // }
+      // });
     };
 
     const goToWrite = () => {

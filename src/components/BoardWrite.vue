@@ -58,7 +58,6 @@
                   class="upload-button"
                   @select="onFileSelect"
                 />
-                
                 <div v-if="uploadedImages.length > 0" class="uploaded-images">
                   <div 
                     v-for="(image, index) in uploadedImages" 
@@ -109,6 +108,7 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
 import FileUpload from 'primevue/fileupload';
+import axios from 'axios';
 
 export default {
   name: 'BoardWrite',
@@ -195,8 +195,13 @@ export default {
         views: 0,
         images: formData.value.images.map(img => img.url)
       };
-
-      emit('registerPost', post);
+      console.log(formData.value.images.map(img => img.url)); 
+      //등록 요청 후 응답 받은 후 목록 페이지로 이동
+      axios.post('/api/Board/register', post).then(response => {
+        if (response.status === 200) {
+          emit('registerPost', post);
+        }
+      });
     };
 
     const goToList = () => {
