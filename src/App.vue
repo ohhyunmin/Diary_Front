@@ -19,12 +19,13 @@
 
 <script>
 
-import { reactive } from "vue";
+import { reactive, onMounted  } from "vue";
 import NavigationBar from './components/NavigationBar.vue'
 import CardPage from './components/CardPage.vue'
 import HomePage from './components/HomePage.vue'
 import BoardPage from './components/BoardPage.vue'
 import BoardWrite from './components/BoardWrite.vue'
+import axios from './axios';
 
 export default {
   components: {
@@ -37,13 +38,15 @@ export default {
 
   setup(){
     const state = reactive({
-      form:{
-        loginId:"",
-        loginPw:""
-      },
+      
       currentRoute: '/',
       newPost: null
     });
+
+    axios.get('/api/login/me').then(response => {
+      if (response.status === 200) {
+        console.log(response.data);
+      }})
 
     const handleRouteChange = (route) => {
       state.currentRoute = route;
@@ -60,6 +63,7 @@ export default {
     };
 
     return {
+      onMounted,
       state,
       handleRouteChange,
       handlePostSubmit,
