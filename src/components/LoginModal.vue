@@ -52,7 +52,7 @@
 </template>
 
 <script>
-  // import axios from "axios";
+import axios from "axios";
   
 export default {
   name: 'LoginModal',
@@ -83,18 +83,11 @@ export default {
       }
     },
     handleSubmit() {
-      // axios.post("/api/Login", args).then((res)=>{
-      //   state.account = res.data;
-      // });
+      axios.post("/api/Login", this.loginForm).then((res)=>{
+        this.loginForm = res.data;
+      });
       this.$emit('login', { ...this.loginForm })
       
-      // 폼 초기화
-      this.loginForm = {
-        email: '',
-        password: '',
-        remember: false
-      }
-
       this.$emit('close')
     }
   },
