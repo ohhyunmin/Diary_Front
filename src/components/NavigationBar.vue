@@ -42,7 +42,7 @@
 
 <script>
 import LoginModal from './LoginModal.vue'
-// import axios from "axios";
+import axios from "axios";
 
 export default {
   name: 'NavigationBar',
@@ -81,9 +81,7 @@ export default {
       this.loginForm.email = '';
       this.loginForm.password = '';
       this.loginForm.remember = '';
-      // const logout = () =>{
-    //   axios.get("/api/Login/logout").then();
-    // };
+      axios.get("/api/Login/logout");
     },
     login(data){
       this.loginForm = data
@@ -94,7 +92,13 @@ export default {
   },
   mounted() {
     // 현재 경로 감지 (실제로는 Vue Router 사용 권장)
-    this.currentRoute = window.location.pathname
+    this.currentRoute = window.location.pathname;
+
+    axios.get('/api/login/refresh').then(response => {
+      if (response.status === 200) {
+        this.loginForm = response.data;
+        console.log(this.loginForm);
+      }})
   }
 }
 </script>

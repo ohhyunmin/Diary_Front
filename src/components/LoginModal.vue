@@ -84,6 +84,7 @@ export default {
     },
     handleSubmit() {
       axios.post("/api/Login", this.loginForm).then((res)=>{
+        console.log(res)
         this.loginForm = res.data;
       });
       this.$emit('login', { ...this.loginForm })
