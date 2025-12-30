@@ -68,7 +68,14 @@ export default {
     navigateTo(route) {
       this.currentRoute = route;
       this.closeMenu();
-      this.$emit('route-change', route);  
+      // If navigating to boardPage, include loginForm in the event payload
+      if (route === '/boardPage') {
+        this.$emit('route-change', { route, loginForm: this.loginForm });
+      }
+      else {
+        this.$emit('route-change', route);
+      }
+      
     },
     openLogin() {
       this.showLoginModal = true

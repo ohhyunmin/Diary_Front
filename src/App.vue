@@ -7,12 +7,14 @@
       v-if="state.currentRoute === '/boardPage'" 
       @navigate="handleRouteChange"
       :newPost="state.newPost"
+      :loginForm="state.loginForm"
     />
     <BoardWrite 
       v-if="state.currentRoute === '/boardWrite'"
       @submit="handlePostSubmit"
       @cancel="handleRouteChange('/boardPage')"
       @registerPost="registerPost"
+      :loginForm="state.loginForm"
     />
   </div>
 </template>
@@ -38,11 +40,17 @@ export default {
   setup(){
     const state = reactive({
       currentRoute: '/',
-      newPost: null
+      newPost: null,
+      loginForm: null
     });
 
-    const handleRouteChange = (route) => {
-      state.currentRoute = route;
+    const handleRouteChange = (payload) => {
+      if (typeof payload === 'string') {
+        state.currentRoute = payload;
+      } else if (payload && typeof payload === 'object') {
+        state.currentRoute = payload.route || state.currentRoute;
+        state.loginForm = payload.loginForm || null;
+      }
     };
 
     const handlePostSubmit = (post) => {

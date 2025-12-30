@@ -112,6 +112,12 @@ import axios from 'axios';
 
 export default {
   name: 'BoardWrite',
+  props: {
+    loginForm: {
+      type: Object,
+      default: null
+    }
+  },
   components: {
     Card,
     InputText,
@@ -121,7 +127,6 @@ export default {
   },
   emits: ['submit', 'cancel'],
   setup(props, { emit }) {
-    
     const formData = ref({
       title: '',
       author: '',
@@ -197,7 +202,7 @@ export default {
       };
       console.log(formData.value.images.map(img => img.url)); 
       //등록 요청 후 응답 받은 후 목록 페이지로 이동
-      axios.post('/api/Board/register', post).then(response => {
+      axios.post('/api/Board/CreateBoard', post).then(response => {
         if (response.status === 200) {
           emit('registerPost', post);
         }

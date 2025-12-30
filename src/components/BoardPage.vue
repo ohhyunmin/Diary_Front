@@ -106,6 +106,11 @@ export default {
       type: Object,
       default: null
     }
+    ,
+    loginForm: {
+      type: Object,
+      default: null
+    }
   },
   emits: ['navigate'],
   setup(props, { emit }) {
@@ -152,7 +157,8 @@ export default {
     };
 
     const goToWrite = () => {
-      emit('navigate', '/boardWrite');
+      // Emit an object payload so the parent can receive loginForm
+      emit('navigate', { route: '/boardWrite', loginForm: props.loginForm });
     };
 
     const readPost = (post) => {
@@ -168,6 +174,8 @@ export default {
 
     onMounted(() => {
       initializePosts();
+      // log loginForm when BoardPage mounts
+      console.log('BoardPage mounted loginForm:', props.loginForm);
     });
 
     // props.newPost가 변경되면 새 글 추가
