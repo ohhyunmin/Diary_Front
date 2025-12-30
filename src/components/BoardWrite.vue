@@ -193,6 +193,7 @@ export default {
       const dateStr = today.toISOString().split('T')[0];
       
       const post = {
+        email: props.loginForm ? props.loginForm.email : '',
         title: formData.value.title,
         author: formData.value.author,
         content: formData.value.content,
