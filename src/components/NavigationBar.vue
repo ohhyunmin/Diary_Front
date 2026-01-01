@@ -42,7 +42,8 @@
 
 <script>
 import LoginModal from './LoginModal.vue'
-import axios from "axios";
+import api from "../axios";
+import { useAuthStore } from "../authStore";
 
 export default {
   name: 'NavigationBar',
@@ -55,7 +56,8 @@ export default {
         email: '',
         password: '',
         remember: false
-      }
+      },
+      auth:useAuthStore()
     }
   },
   methods: {
@@ -88,7 +90,12 @@ export default {
       this.loginForm.email = '';
       this.loginForm.password = '';
       this.loginForm.remember = '';
-      axios.get("/api/Login/logout");
+      try {
+        api.get("/api/Login/logout");
+        this.auth.clear();
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
     },
     login(data){
       this.loginForm = data
@@ -99,12 +106,11 @@ export default {
   },
   mounted() {
     // 현재 경로 감지 (실제로는 Vue Router 사용 권장)
-    this.currentRoute = window.location.pathname;
+    //this.currentRoute = window.location.pathname;
 
-    axios.get('/api/login/refresh').then(response => {
+    api.get('/api/login/refresh').then(response => {
       if (response.status === 200) {
         this.loginForm = response.data;
-        console.log(this.loginForm);
       }})
   }
 }

@@ -89,7 +89,7 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
-import axios from 'axios';
+import api from "../axios"
 
 export default {
   name: 'BoardPage',
@@ -123,7 +123,7 @@ export default {
       
       // If the API expects query params (GET), pass them via `params` in the config.
       // If the API expects a JSON body, use `axios.post` instead (see commented alternative).
-      axios.get('/api/Board/AllBoard').then(response => {
+      api.get('/api/Board/AllBoard').then(response => {
         if (response.status === 200) {
           posts.value = response.data;
         }

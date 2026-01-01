@@ -52,7 +52,8 @@
 </template>
 
 <script>
-import axios from "axios";
+import api from "../axios"
+import { useAuthStore } from "../authStore";
   
 export default {
   name: 'LoginModal',
@@ -82,11 +83,13 @@ export default {
         remember: false
       }
     },
-    handleSubmit() {
-      axios.post("/api/Login", this.loginForm).then((res)=>{
-        console.log(res)
-        this.loginForm = res.data;
-      });
+    handleSubmit()  {
+        const store = useAuthStore()
+        api.post("/api/Login", this.loginForm).then((res)=>{
+          this.loginForm = res.data;
+          store.setToken(res.data.access_token);
+        });
+
       this.$emit('login', { ...this.loginForm })
       
       this.$emit('close')
