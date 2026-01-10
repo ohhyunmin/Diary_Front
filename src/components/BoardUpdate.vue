@@ -4,7 +4,7 @@
       <Card class="write-card">
         <template #title>
           <div class="write-header">
-            <h1>글쓰기</h1>
+            <h1>글 수정</h1>
             <Button 
               label="목록으로" 
               icon="pi pi-arrow-left" 
@@ -91,9 +91,9 @@
               @click="goToList"
             />
             <Button 
-              label="등록" 
+              label="수정" 
               icon="pi pi-check" 
-              @click="submitPost"
+              @click="submitUpdate"
             />
           </div>
         </template>
@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
@@ -112,8 +112,12 @@ import FileUpload from 'primevue/fileupload';
 import api from "../axios"
 
 export default {
-  name: 'BoardWrite',
+  name: 'BoardUpdate',
   props: {
+    post: {
+      type: Object,
+      default: null
+    },
     loginForm: {
       type: Object,
       default: null
@@ -126,16 +130,44 @@ export default {
     Button,
     FileUpload
   },
-  emits: ['submit', 'cancel'],
+  emits: ['navigate'],
   setup(props, { emit }) {
     const formData = ref({
+      id: null,
       title: '',
       author: '',
       content: '',
-      image: ref(null)
+      image: null
     });
 
     const uploadedImages = ref([]);
+
+    onMounted(() => {
+      if (props.post) {
+        formData.value.id = props.post.id || null;
+        formData.value.title = props.post.title || '';
+        formData.value.author = props.post.author || '';
+        formData.value.content = props.post.content || '';
+        // handle single image if present and normalize for preview
+        const imgs = (props.post.images && Array.isArray(props.post.images)) ? props.post.images : (props.post.images ? [props.post.images] : []);
+        let imgCandidate = imgs.length > 0 ? imgs[0] : (props.post.imagedata || null);
+        let imageUrl = null;
+        if (imgCandidate) {
+          if (typeof imgCandidate === 'object' && imgCandidate.url) {
+            imageUrl = imgCandidate.url;
+          } else if (typeof imgCandidate === 'string') {
+            if (imgCandidate.startsWith('data:') || imgCandidate.startsWith('http') || imgCandidate.startsWith('/')) {
+              imageUrl = imgCandidate;
+            } else {
+              // likely a raw base64 string without data URL prefix; add a reasonable default prefix
+              imageUrl = 'data:image/jpeg;base64,' + imgCandidate;
+            }
+          }
+        }
+        formData.value.image = imageUrl;
+        uploadedImages.value = imageUrl ? [{ name: '이미지', url: imageUrl, file: null }] : [];
+      }
+    });
 
     const onFileSelect = (event) => {
       const files = event.files;
@@ -161,7 +193,6 @@ export default {
     };
 
     const removeImage = () => {
-      // since we only allow one image, clear arrays entirely
       uploadedImages.value = [];
       formData.value.image = null;
     };
@@ -182,28 +213,21 @@ export default {
       return true;
     };
 
-    const submitPost = () => {
-      if (!validateForm()) {
-        return;
-      }
+    const submitUpdate = () => {
+      if (!validateForm()) return;
 
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0];
-      
-      const postPayload = {
+      const updatedPayload = {
+        id: formData.value.id,
         email: props.loginForm ? props.loginForm.email : '',
         title: formData.value.title,
         author: formData.value.author,
-        content: formData.value.content,
-        date: dateStr
+        content: formData.value.content
       };
 
-      // If an image (data URL) is present, send multipart/form-data
       if (formData.value.image) {
         const form = new FormData();
-        Object.keys(postPayload).forEach(key => form.append(key, postPayload[key]));
+        Object.keys(updatedPayload).forEach(key => form.append(key, updatedPayload[key]));
 
-        // convert dataURL to Blob and append as file
         const dataUrl = formData.value.image;
         const arr = dataUrl.split(',');
         const mime = arr[0].match(/:(.*?);/)[1];
@@ -216,31 +240,32 @@ export default {
         const blob = new Blob([u8arr], { type: mime });
         form.append('image', blob, uploadedImages.value[0]?.name || 'image.jpg');
 
-        api.post('/api/Board', form).then(response => {
+        api.put('/api/Board/' + props.post.id, form).then(response => {
           if (response.status === 200) {
-            emit('registerPost', postPayload);
+            emit('navigate', { route: '/boardDetail', post: { ...updatedPayload, imagedata: formData.value.image }, loginForm: props.loginForm });
           }
         }).catch(err => {
-          console.error('CreateBoard failed:', err.response || err);
-          alert('게시글 등록 중 오류가 발생했습니다.');
+          console.error('Update failed', err.response || err);
+          alert('수정 중 오류가 발생했습니다.');
         });
       } else {
-        // No image — send JSON
+        // no image — send JSON
         const form = new FormData();
-        Object.keys(postPayload).forEach(key => form.append(key, postPayload[key]));
-        api.post('/api/Board', form).then(response => {
+        Object.keys(updatedPayload).forEach(key => form.append(key, updatedPayload[key]));
+        
+        api.put('/api/Board/' + props.post.id, form).then(response => {
           if (response.status === 200) {
-            emit('registerPost', postPayload);
+            emit('navigate', { route: '/boardDetail', post: updatedPayload, loginForm: props.loginForm });
           }
         }).catch(err => {
-          console.error('CreateBoard failed:', err.response || err);
-          alert('게시글 등록 중 오류가 발생했습니다.');
+          console.error('Update failed', err.response || err);
+          alert('수정 중 오류가 발생했습니다.');
         });
       }
     };
 
     const goToList = () => {
-      emit('cancel');
+      emit('navigate', { route: '/boardDetail', post: props.post, loginForm: props.loginForm });
     };
 
     return {
@@ -248,7 +273,7 @@ export default {
       uploadedImages,
       onFileSelect,
       removeImage,
-      submitPost,
+      submitUpdate,
       goToList
     };
   }
@@ -256,139 +281,30 @@ export default {
 </script>
 
 <style scoped>
-.board-write-page {
-  padding: 2rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.write-container {
-  width: 100%;
-}
-
-.write-card {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.write-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.write-header h1 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 1.75rem;
-}
-
-.write-form {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 1rem 0;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.field label {
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 1rem;
-}
-
-.required {
-  color: #e74c3c;
-}
-
-.image-upload-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.upload-button {
-  width: fit-content;
-}
-
-.uploaded-images {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.image-preview-item {
-  position: relative;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 0.5rem;
-  background: #f9f9f9;
-}
-
-.preview-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 4px;
-  display: block;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(4px);
-}
-
-.image-name {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: #666;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.write-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
-}
-
+/* reuse styles from BoardWrite.vue */
+.board-write-page { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+.write-container { width: 100%; }
+.write-card { box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); }
+.write-header { display: flex; justify-content: space-between; align-items: center; }
+.write-header h1 { margin: 0; color: #2c3e50; font-size: 1.75rem; }
+.write-form { display: flex; flex-direction: column; gap: 2rem; padding: 1rem 0; }
+.field { display: flex; flex-direction: column; gap: 0.75rem; }
+.field label { font-weight: 600; color: #2c3e50; font-size: 1rem; }
+.required { color: #e74c3c; }
+.image-upload-section { display: flex; flex-direction: column; gap: 1rem; }
+.upload-button { width: fit-content; }
+.uploaded-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.image-preview-item { position: relative; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; background: #f9f9f9; }
+.preview-image { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; display: block; }
+.remove-image-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(4px); }
+.image-name { display: block; margin-top: 0.5rem; font-size: 0.875rem; color: #666; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.write-footer { display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
 @media (max-width: 768px) {
-  .board-write-page {
-    padding: 1rem;
-  }
-
-  .write-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .write-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .write-footer {
-    flex-direction: column-reverse;
-  }
-
-  .write-footer button {
-    width: 100%;
-  }
-
-  .uploaded-images {
-    grid-template-columns: 1fr;
-  }
+  .board-write-page { padding: 1rem; }
+  .write-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .write-header h1 { font-size: 1.5rem; }
+  .write-footer { flex-direction: column-reverse; }
+  .write-footer button { width: 100%; }
+  .uploaded-images { grid-template-columns: 1fr; }
 }
 </style>

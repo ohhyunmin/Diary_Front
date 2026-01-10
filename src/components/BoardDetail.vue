@@ -3,18 +3,24 @@
     <div class="board-container">
       <div class="board-header">
         <h1>게시글 상세</h1>
-        <Button label="목록으로" icon="pi pi-angle-left" @click="goToList" class="back-btn" />
+        <div>
+          <Button label="목록으로" icon="pi pi-angle-left" @click="goToList" class="back-btn" style="margin-right:8px;" />
+          <Button label="수정" icon="pi pi-pencil" @click="goToUpdate" class="back-btn" />
+        </div>
       </div>
 
       <Card class="detail-card">
         <template #content>
-          <div v-if="post">
-            <h2 class="detail-title">{{ post.title }}</h2>
+          <div v-if="displayPost">
+            <h2 class="detail-title">{{ displayPost.title }}</h2>
             <div class="post-info">
-              <div class="info-item"><span class="label">작성자:</span> <span class="value">{{ post.author }}</span></div>
-              <div class="info-item"><span class="label">작성일:</span> <span class="value">{{ post.createtime }}</span></div>
+              <div class="info-item"><span class="label">작성자:</span> <span class="value">{{ displayPost.author }}</span></div>
+              <div class="info-item"><span class="label">작성일:</span> <span class="value">{{ displayPost.createtime }}</span></div>
             </div>
-            <div class="post-content">{{ post.content }}</div>
+            <div v-if="displayPost.imagedata" class="detail-image-wrap">
+              <img :src="displayPost.imagedata" alt="post image" class="detail-image" />
+            </div>
+            <div class="post-content">{{ displayPost.content }}</div>
           </div>
           <div v-else class="no-post">게시글을 찾을 수 없습니다.</div>
         </template>
@@ -24,7 +30,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import api from "../axios"
@@ -45,7 +51,9 @@ export default {
   emits: ['navigate'],
   setup(props, { emit }) {
 
-    const post = ref(null);
+    const detailPost = ref(null);
+
+    const displayPost = computed(() => detailPost.value || props.post);
 
     // 샘플 게시글 데이터 / 상세 조회
     const initializePosts = () => {
@@ -54,7 +62,14 @@ export default {
         api.get('/api/Board/' + props.post.id).then(response => {
           if (response.status === 200) {
             console.log(response.data);
-            post.value = response.data;
+            // normalize imagedata: if server returns base64 without data: prefix
+            if (response.data.imagedata) {
+              const img = response.data.imagedata;
+              if (typeof img === 'string' && !img.startsWith('data:')) {
+                response.data.imagedata = 'data:image/jpeg;base64,' + img;
+              }
+            }
+            detailPost.value = response.data;
           }
         }).catch(error => {
           if (error && error.response) {
@@ -63,6 +78,9 @@ export default {
             console.error('Board detail fetch error:', error);
           }
         });
+      } else if (props.post) {
+        // use passed post object if no id to fetch
+        detailPost.value = props.post;
       }
     };
 
@@ -76,7 +94,11 @@ export default {
       emit('navigate', { route: '/boardPage', loginForm: props.loginForm });
     };
 
-    return { goToList };
+    const goToUpdate = () => {
+      emit('navigate', { route: '/boardUpdate', post: props.post, loginForm: props.loginForm });
+    };
+
+    return { displayPost, goToList, goToUpdate };
   }
 };
 </script>
@@ -91,5 +113,7 @@ export default {
 .post-info { display:flex; gap:2rem; margin-bottom:1rem; }
 .info-item .label { font-weight:600; color:#666; margin-right:0.5rem; }
 .post-content { white-space:pre-wrap; line-height:1.8; color:#2c3e50; padding-top:0.5rem; }
+.detail-image-wrap { margin-bottom: 1rem; }
+.detail-image { max-width: 100%; height: auto; border-radius: 6px; display: block; }
 .no-post { color:#999; padding:1rem; }
 </style>

@@ -22,6 +22,12 @@
       :loginForm="state.loginForm"
       :post="state.currentPost"
     />
+    <BoardUpdate
+      v-if="state.currentRoute === '/boardUpdate'"
+      @navigate="handleRouteChange"
+      :loginForm="state.loginForm"
+      :post="state.currentPost"
+    />
   </div>
 </template>
 
@@ -34,6 +40,7 @@ import HomePage from './components/HomePage.vue'
 import BoardPage from './components/BoardPage.vue'
 import BoardWrite from './components/BoardWrite.vue'
 import BoardDetail from './components/BoardDetail.vue';
+import BoardUpdate from './components/BoardUpdate.vue';
 
 export default {
   components: {
@@ -42,7 +49,8 @@ export default {
     HomePage,
     BoardPage,
     BoardWrite,
-    BoardDetail
+    BoardDetail,
+    BoardUpdate
   },
 
   setup(){

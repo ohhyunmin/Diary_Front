@@ -131,8 +131,6 @@ export default {
 
     onMounted(() => {
       initializePosts();
-      // log loginForm when BoardPage mounts
-      console.log('BoardPage mounted loginForm:', props.loginForm);
     });
 
     // props.newPost가 변경되면 새 글 추가
