@@ -34,50 +34,13 @@
               </template>
             </Column>
             <Column field="author" header="작성자" :sortable="true" style="width: 15%"></Column>
-            <Column field="date" header="작성일" :sortable="true" style="width: 15%"></Column>
-            <Column field="views" header="조회수" :sortable="true" style="width: 10%"></Column>
+            <Column field="createtime" header="작성일" :sortable="true" style="width: 15%"></Column>
           </DataTable>
         </template>
       </Card>
     </div>
 
-    <!-- 글 읽기 모달 -->
-    <Dialog 
-      v-model:visible="showReadModal" 
-      modal 
-      :header="selectedPost?.title || '게시글'" 
-      :style="{ width: '50rem' }"
-      :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
-    >
-      <div class="read-content" v-if="selectedPost">
-        <div class="post-info">
-          <div class="info-item">
-            <span class="label">작성자:</span>
-            <span class="value">{{ selectedPost.author }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">작성일:</span>
-            <span class="value">{{ selectedPost.date }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">조회수:</span>
-            <span class="value">{{ selectedPost.views }}</span>
-          </div>
-        </div>
-        <Divider />
-        <div class="post-content">
-          {{ selectedPost.content }}
-        </div>
-      </div>
-      <template #footer>
-        <Button 
-          label="닫기" 
-          icon="pi pi-times" 
-          @click="closeReadModal" 
-          severity="secondary"
-        />
-      </template>
-    </Dialog>
+    
   </div>
 </template>
 
@@ -87,8 +50,6 @@ import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import Divider from 'primevue/divider';
 import api from "../axios"
 
 export default {
@@ -97,9 +58,7 @@ export default {
     Card,
     DataTable,
     Column,
-    Button,
-    Dialog,
-    Divider
+    Button
   },
   props: {
     newPost: {
@@ -115,8 +74,6 @@ export default {
   emits: ['navigate'],
   setup(props, { emit }) {
     const posts = ref([]);
-    const showReadModal = ref(false);
-    const selectedPost = ref(null);
 
     // 샘플 게시글 데이터
     const initializePosts = () => {
@@ -125,6 +82,7 @@ export default {
       // If the API expects a JSON body, use `axios.post` instead (see commented alternative).
       api.get('/api/Board/AllBoard').then(response => {
         if (response.status === 200) {
+          console.log(response.data);
           posts.value = response.data;
         }
         else{
@@ -134,7 +92,6 @@ export default {
         //     title: '첫 번째 게시글입니다',
         //     author: '홍길동',
         //     date: '2024-01-15',
-        //     views: 42,
         //     content: '첫 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
         //   },
         //   {
@@ -142,7 +99,6 @@ export default {
         //     title: '두 번째 게시글입니다',
         //     author: '김철수',
         //     date: '2024-01-14',
-        //     views: 35,
         //     content: '두 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
         //   },
         //   {
@@ -150,7 +106,6 @@ export default {
         //     title: '세 번째 게시글입니다',
         //     author: '이영희',
         //     date: '2024-01-13',
-        //     views: 28,
         //     content: '세 번째 게시글의 내용입니다. 이것은 샘플 데이터입니다.'
         //   }
         // ];
@@ -170,17 +125,6 @@ export default {
       emit('navigate', { route: '/boardWrite', loginForm: props.loginForm });
     };
 
-    const readPost = (post) => {
-      selectedPost.value = { ...post };
-      post.views += 1;
-      showReadModal.value = true;
-    };
-
-    const closeReadModal = () => {
-      showReadModal.value = false;
-      selectedPost.value = null;
-    };
-
     onMounted(() => {
       initializePosts();
       // log loginForm when BoardPage mounts
@@ -197,11 +141,7 @@ export default {
 
     return {
       posts,
-      showReadModal,
-      selectedPost,
-      goToWrite,
-      readPost,
-      closeReadModal
+      goToWrite
     };
   }
 };

@@ -198,7 +198,6 @@ export default {
         author: formData.value.author,
         content: formData.value.content,
         date: dateStr,
-        views: 0,
         images: formData.value.images.map(img => img.url)
       };
       console.log(formData.value.images.map(img => img.url)); 
