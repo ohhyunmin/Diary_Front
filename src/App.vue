@@ -16,6 +16,12 @@
       @registerPost="registerPost"
       :loginForm="state.loginForm"
     />
+    <BoardDetail 
+      v-if="state.currentRoute === '/boardDetail'"
+      @navigate="handleRouteChange"
+      :loginForm="state.loginForm"
+      :post="state.currentPost"
+    />
   </div>
 </template>
 
@@ -27,6 +33,7 @@ import CardPage from './components/CardPage.vue'
 import HomePage from './components/HomePage.vue'
 import BoardPage from './components/BoardPage.vue'
 import BoardWrite from './components/BoardWrite.vue'
+import BoardDetail from './components/BoardDetail.vue';
 
 export default {
   components: {
@@ -34,14 +41,16 @@ export default {
     CardPage,
     HomePage,
     BoardPage,
-    BoardWrite
+    BoardWrite,
+    BoardDetail
   },
 
   setup(){
     const state = reactive({
       currentRoute: '/',
       newPost: null,
-      loginForm: null
+      loginForm: null,
+      currentPost: null
     });
 
     const handleRouteChange = (payload) => {
@@ -50,6 +59,7 @@ export default {
       } else if (payload && typeof payload === 'object') {
         state.currentRoute = payload.route || state.currentRoute;
         state.loginForm = payload.loginForm || null;
+        state.currentPost = payload.post || null;
       }
     };
 

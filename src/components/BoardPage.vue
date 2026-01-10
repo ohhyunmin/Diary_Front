@@ -125,6 +125,10 @@ export default {
       emit('navigate', { route: '/boardWrite', loginForm: props.loginForm });
     };
 
+    const readPost = (post) => {
+      emit('navigate', { route: '/boardDetail', post, loginForm: props.loginForm });
+    };
+
     onMounted(() => {
       initializePosts();
       // log loginForm when BoardPage mounts
@@ -141,7 +145,8 @@ export default {
 
     return {
       posts,
-      goToWrite
+      goToWrite,
+      readPost
     };
   }
 };
