@@ -53,7 +53,8 @@ export default {
       loginForm: {
         email: '',
         password: ''
-      }
+      },
+      auth : useAuthStore()
     }
   },
   computed: {
@@ -64,7 +65,6 @@ export default {
   methods: {
     navigateTo(route) {
       if (route === '/boardPage') {
-        console.log('Navigating to /boardPage with loginForm:', this.loginForm);
         this.$router.push({ path: '/boardPage', query: { loginForm: JSON.stringify(this.loginForm) } }).catch(() => {});
       } else {
         this.$router.push({ path: route }).catch(() => {});
@@ -97,14 +97,12 @@ export default {
   mounted() {
     // 현재 경로 감지 (실제로는 Vue Router 사용 권장)
     //this.currentRoute = window.location.pathname;
-    const auth = useAuthStore()
+    
     api.get('/api/login/refresh').then(response => {
       console.log('monted');
       if (response.status === 200) {
-        console.log('Auto login successful:', response.data);
         this.loginForm = response.data;
-        auth.setToken(response.data.access_Token);
-        console.log('auth:', response.data.access_Token);
+        this.auth.setToken(response.data.access_Token);
       }})
   }
 }
