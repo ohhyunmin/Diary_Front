@@ -84,10 +84,11 @@ export default {
       }
     },
     handleSubmit()  {
-        const store = useAuthStore()
+        const auth = useAuthStore()
         api.post("/api/Login", this.loginForm).then((res)=>{
           this.loginForm = res.data;
-          store.setToken(res.data.access_token);
+          auth.setToken(res.data.access_token);
+          auth.setLoginForm(this.loginForm);
         });
 
       this.$emit('login', { ...this.loginForm })

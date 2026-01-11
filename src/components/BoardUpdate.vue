@@ -104,6 +104,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
@@ -130,11 +131,12 @@ export default {
     Button,
     FileUpload
   },
-  emits: ['navigate'],
-  setup(props, { emit }) {
+
+  setup(props) {
     const formData = ref({
       id: null,
       title: '',
+      email: '',
       author: '',
       content: '',
       image: null
@@ -142,30 +144,49 @@ export default {
 
     const uploadedImages = ref([]);
 
-    onMounted(() => {
-      if (props.post) {
-        formData.value.id = props.post.id || null;
-        formData.value.title = props.post.title || '';
-        formData.value.author = props.post.author || '';
-        formData.value.content = props.post.content || '';
-        // handle single image if present and normalize for preview
-        const imgs = (props.post.images && Array.isArray(props.post.images)) ? props.post.images : (props.post.images ? [props.post.images] : []);
-        let imgCandidate = imgs.length > 0 ? imgs[0] : (props.post.imagedata || null);
-        let imageUrl = null;
-        if (imgCandidate) {
-          if (typeof imgCandidate === 'object' && imgCandidate.url) {
-            imageUrl = imgCandidate.url;
-          } else if (typeof imgCandidate === 'string') {
-            if (imgCandidate.startsWith('data:') || imgCandidate.startsWith('http') || imgCandidate.startsWith('/')) {
-              imageUrl = imgCandidate;
-            } else {
-              // likely a raw base64 string without data URL prefix; add a reasonable default prefix
-              imageUrl = 'data:image/jpeg;base64,' + imgCandidate;
-            }
+    const route = useRoute();
+    const router = useRouter();
+
+    const loadPost = (post) => {
+      formData.value.id = post.id || null;
+      formData.value.email = post.email || null;
+      formData.value.title = post.title || '';
+      formData.value.author = post.author || '';
+      formData.value.content = post.content || '';
+      const imgs = (post.images && Array.isArray(post.images)) ? post.images : (post.images ? [post.images] : []);
+      let imgCandidate = imgs.length > 0 ? imgs[0] : (post.imagedata || null);
+      let imageUrl = null;
+      if (imgCandidate) {
+        if (typeof imgCandidate === 'object' && imgCandidate.url) {
+          imageUrl = imgCandidate.url;
+        } else if (typeof imgCandidate === 'string') {
+          if (imgCandidate.startsWith('data:') || imgCandidate.startsWith('http') || imgCandidate.startsWith('/')) {
+            imageUrl = imgCandidate;
+          } else {
+            imageUrl = 'data:image/jpeg;base64,' + imgCandidate;
           }
         }
-        formData.value.image = imageUrl;
-        uploadedImages.value = imageUrl ? [{ name: '이미지', url: imageUrl, file: null }] : [];
+      }
+      formData.value.image = imageUrl;
+      uploadedImages.value = imageUrl ? [{ name: '이미지', url: imageUrl, file: null }] : [];
+    };
+
+    onMounted(() => {
+      const routeId = route.params && route.params.id;
+      if (routeId) {
+        api.get('/api/Board/' + routeId).then(response => {
+          if (response.status === 200) {
+            const data = response.data;
+            if (data && data.imagedata && typeof data.imagedata === 'string' && !data.imagedata.startsWith('data:')) {
+              data.imagedata = 'data:image/jpeg;base64,' + data.imagedata;
+            }
+            loadPost(data);
+          }
+        }).catch(err => {
+          console.error('Failed to load post for update', err.response || err);
+        });
+      } else if (props.post) {
+        loadPost(props.post);
       }
     });
 
@@ -218,7 +239,7 @@ export default {
 
       const updatedPayload = {
         id: formData.value.id,
-        email: props.loginForm ? props.loginForm.email : '',
+        email: formData.value.email,
         title: formData.value.title,
         author: formData.value.author,
         content: formData.value.content
@@ -240,9 +261,10 @@ export default {
         const blob = new Blob([u8arr], { type: mime });
         form.append('image', blob, uploadedImages.value[0]?.name || 'image.jpg');
 
-        api.put('/api/Board/' + props.post.id, form).then(response => {
+        const idToUse = formData.value.id || (props.post && props.post.id);
+        api.put('/api/Board/' + idToUse, form).then(response => {
           if (response.status === 200) {
-            emit('navigate', { route: '/boardDetail', post: { ...updatedPayload, imagedata: formData.value.image }, loginForm: props.loginForm });
+            router.push({ name: 'BoardDetail', params: { id: idToUse } }).catch(() => {});
           }
         }).catch(err => {
           console.error('Update failed', err.response || err);
@@ -253,9 +275,10 @@ export default {
         const form = new FormData();
         Object.keys(updatedPayload).forEach(key => form.append(key, updatedPayload[key]));
         
-        api.put('/api/Board/' + props.post.id, form).then(response => {
+        const idToUse = formData.value.id || (props.post && props.post.id);
+        api.put('/api/Board/' + idToUse, form).then(response => {
           if (response.status === 200) {
-            emit('navigate', { route: '/boardDetail', post: updatedPayload, loginForm: props.loginForm });
+            router.push({ name: 'BoardDetail', params: { id: idToUse } }).catch(() => {});
           }
         }).catch(err => {
           console.error('Update failed', err.response || err);
@@ -265,7 +288,7 @@ export default {
     };
 
     const goToList = () => {
-      emit('navigate', { route: '/boardDetail', post: props.post, loginForm: props.loginForm });
+      router.push({ name: 'BoardDetail', params: { id: route.params.id } }).catch(() => {});
     };
 
     return {

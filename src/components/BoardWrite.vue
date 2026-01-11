@@ -104,6 +104,8 @@
 
 <script>
 import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '../authStore';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
@@ -126,14 +128,17 @@ export default {
     Button,
     FileUpload
   },
-  emits: ['submit', 'cancel'],
-  setup(props, { emit }) {
+  setup() {
     const formData = ref({
       title: '',
       author: '',
       content: '',
       image: ref(null)
     });
+
+    const route = useRoute();
+    const router = useRouter();
+    const auth = useAuthStore();
 
     const uploadedImages = ref([]);
 
@@ -167,6 +172,7 @@ export default {
     };
 
     const validateForm = () => {
+      console.log('auth:', auth.loginForm);
       if (!formData.value.title.trim()) {
         alert('제목을 입력해주세요.');
         return false;
@@ -189,9 +195,13 @@ export default {
 
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0];
-      
+      console.log(auth.loginForm);
+      const parsedLogin = route.query.loginForm ? JSON.parse(route.query.loginForm) : null;
+      const loginFromStore = auth.loginForm || null;
+      const effectiveLogin = parsedLogin || loginFromStore;
+
       const postPayload = {
-        email: props.loginForm ? props.loginForm.email : '',
+        email: effectiveLogin && effectiveLogin.email ? effectiveLogin.email : '',
         title: formData.value.title,
         author: formData.value.author,
         content: formData.value.content,
@@ -218,7 +228,7 @@ export default {
 
         api.post('/api/Board', form).then(response => {
           if (response.status === 200) {
-            emit('registerPost', postPayload);
+            router.push({ name: 'BoardPage' }).catch(() => {});
           }
         }).catch(err => {
           console.error('CreateBoard failed:', err.response || err);
@@ -228,9 +238,10 @@ export default {
         // No image — send JSON
         const form = new FormData();
         Object.keys(postPayload).forEach(key => form.append(key, postPayload[key]));
+        console.log(postPayload);
         api.post('/api/Board', form).then(response => {
           if (response.status === 200) {
-            emit('registerPost', postPayload);
+            router.push({ name: 'BoardPage' }).catch(() => {});
           }
         }).catch(err => {
           console.error('CreateBoard failed:', err.response || err);
@@ -240,7 +251,7 @@ export default {
     };
 
     const goToList = () => {
-      emit('cancel');
+      router.push({ name: 'BoardPage' }).catch(() => {});
     };
 
     return {

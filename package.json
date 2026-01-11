@@ -8,12 +8,19 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.20",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/vue3": "^6.1.20",
     "@primeuix/themes": "^2.0.2",
     "axios": "^1.13.2",
     "core-js": "^3.8.3",
+    "pinia": "^2.3.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "vue-router": "^4.6.4",
+    "vue3-cookies": "^1.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

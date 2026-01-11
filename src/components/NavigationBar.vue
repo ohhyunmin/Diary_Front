@@ -49,50 +49,40 @@ export default {
   name: 'NavigationBar',
   data() {
     return {
-      isMenuOpen: false,
-      currentRoute: '/',
       showLoginModal: false,
       loginForm: {
         email: '',
-        password: '',
-        remember: false
-      },
-      auth:useAuthStore()
+        password: ''
+      }
+    }
+  },
+  computed: {
+    currentRoute() {
+      return this.$route ? this.$route.path : '/'
     }
   },
   methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen
-    },
-    closeMenu() {
-      this.isMenuOpen = false
-    },
     navigateTo(route) {
-      this.currentRoute = route;
-      this.closeMenu();
-      // If navigating to boardPage, include loginForm in the event payload
       if (route === '/boardPage') {
-        this.$emit('route-change', { route, loginForm: this.loginForm });
+        console.log('Navigating to /boardPage with loginForm:', this.loginForm);
+        this.$router.push({ path: '/boardPage', query: { loginForm: JSON.stringify(this.loginForm) } }).catch(() => {});
+      } else {
+        this.$router.push({ path: route }).catch(() => {});
       }
-      else {
-        this.$emit('route-change', route);
-      }
-      
     },
     openLogin() {
       this.showLoginModal = true
-      this.closeMenu()
     },
     closeModal() {
       this.showLoginModal = false
     },
     logout(){
-      this.loginForm.email = '';
-      this.loginForm.password = '';
-      this.loginForm.remember = '';
+      
       try {
-        api.get("/api/Login/logout");
+        api.post('/api/Login/logout')
         this.auth.clear();
+        this.loginForm.email = '';
+        this.loginForm.password = '';
       } catch (error) {
         console.error("Logout failed:", error);
       }
@@ -107,10 +97,14 @@ export default {
   mounted() {
     // 현재 경로 감지 (실제로는 Vue Router 사용 권장)
     //this.currentRoute = window.location.pathname;
-
+    const auth = useAuthStore()
     api.get('/api/login/refresh').then(response => {
+      console.log('monted');
       if (response.status === 200) {
+        console.log('Auto login successful:', response.data);
         this.loginForm = response.data;
+        auth.setToken(response.data.access_Token);
+        console.log('auth:', response.data.access_Token);
       }})
   }
 }

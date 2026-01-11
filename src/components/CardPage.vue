@@ -44,7 +44,6 @@ export default {
             const post_data = response.data[i];
             const item = post_data.data || post_data;
             if (item && item.imagedata) {
-              console.log(item.imagedata);
               const img = item.imagedata;
               if (typeof img === 'string' && !img.startsWith('data:')) {
                 item.imagedata = 'data:image/jpeg;base64,' + img;

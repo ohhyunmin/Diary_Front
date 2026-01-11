@@ -31,6 +31,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import api from "../axios"
@@ -48,18 +49,22 @@ export default {
       default: null
     }
   },
-  emits: ['navigate'],
-  setup(props, { emit }) {
+  setup(props) {
 
     const detailPost = ref(null);
 
     const displayPost = computed(() => detailPost.value || props.post);
 
+    const route = useRoute();
+    const router = useRouter();
+
     // 샘플 게시글 데이터 / 상세 조회
     const initializePosts = () => {
-      console.log('BoardDetail props:', props);
-      if (props.post && props.post.id) {
-        api.get('/api/Board/' + props.post.id).then(response => {
+      
+      console.log('BoardDetail route.params:', route.params);
+      const routeId = route.params && route.params.id;
+      const fetchById = (id) => {
+        api.get('/api/Board/' + id).then(response => {
           if (response.status === 200) {
             if (response.data.imagedata) {
               const img = response.data.imagedata;
@@ -76,24 +81,32 @@ export default {
             console.error('Board detail fetch error:', error);
           }
         });
+      };
+
+      if (routeId) {
+        fetchById(routeId);
+      } else if (props.post && props.post.id) {
+        fetchById(props.post.id);
       } else if (props.post) {
-        // use passed post object if no id to fetch
         detailPost.value = props.post;
       }
     };
 
     onMounted(() => {
       initializePosts();
-      // log loginForm when BoardPage mounts
-      console.log('BoardPage mounted loginForm:', props.loginForm);
     });
 
     const goToList = () => {
-      emit('navigate', { route: '/boardPage', loginForm: props.loginForm });
+      router.push({ name: 'BoardPage' }).catch(() => {});
     };
 
     const goToUpdate = () => {
-      emit('navigate', { route: '/boardUpdate', post: props.post, loginForm: props.loginForm });
+      const id = (displayPost.value && displayPost.value.id) || (props.post && props.post.id);
+      if (id) {
+        router.push({ name: 'BoardUpdate', params: { id } }).catch(() => {});
+      } else {
+        console.warn('goToUpdate: no post id available');
+      }
     };
 
     return { displayPost, goToList, goToUpdate };

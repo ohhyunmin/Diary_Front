@@ -46,6 +46,8 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '../authStore';
 import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -66,9 +68,11 @@ export default {
       default: null
     }
   },
-  emits: ['navigate'],
-  setup(props, { emit }) {
+  setup(props) {
     const posts = ref([]);
+    const router = useRouter();
+    const route = useRoute();
+    const auth = useAuthStore();
 
     // 샘플 게시글 데이터
     const initializePosts = () => {
@@ -116,12 +120,24 @@ export default {
     };
 
     const goToWrite = () => {
-      // Emit an object payload so the parent can receive loginForm
-      emit('navigate', { route: '/boardWrite', loginForm: props.loginForm });
+      // Navigate to BoardWrite via vue-router; include loginForm in query if present
+        console.log('aaa' + route.query.loginForm);
+        if (props.loginForm) {
+          // persist loginForm in Pinia so destination can reliably read it
+          auth.setLoginForm(props.loginForm);
+          router.push({ name: 'BoardWrite', query: { loginForm: JSON.stringify(props.loginForm) } }).catch(() => {});
+        } else {
+          router.push({ name: 'BoardWrite' }).catch(() => {});
+        }
     };
-
     const readPost = (post) => {
-      emit('navigate', { route: '/boardDetail', post, loginForm: props.loginForm });
+      if (!post || !post.id) {
+        console.warn('readPost: invalid post', post);
+        return;
+      }
+      router.push({ name: 'BoardDetail', params: { id: post.id } }).catch(() => {});
+      // If you need to pass more data, use query or a store (Pinia)
+      // emit('navigate', { route: '/boardDetail', post, loginForm: props.loginForm });
     };
 
     onMounted(() => {
