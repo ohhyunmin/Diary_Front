@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -61,11 +61,6 @@ export default {
     Button
   },
   props: {
-    newPost: {
-      type: Object,
-      default: null
-    }
-    ,
     loginForm: {
       type: Object,
       default: null
@@ -132,14 +127,6 @@ export default {
     onMounted(() => {
       initializePosts();
     });
-
-    // props.newPost가 변경되면 새 글 추가
-    watch(() => props.newPost, (newPost) => {
-      if (newPost) {
-        const newId = posts.value.length > 0 ? Math.max(...posts.value.map(p => p.id)) + 1 : 1;
-        posts.value.unshift({ ...newPost, id: newId });
-      }
-    }, { immediate: false });
 
     return {
       posts,

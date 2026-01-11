@@ -2,11 +2,12 @@
   <div class = "app">
     <NavigationBar @route-change="handleRouteChange" />
     <HomePage v-if="state.currentRoute === '/'" />
-    <CardPage v-if="state.currentRoute === '/cardPage'" />
+    <CardPage v-if="state.currentRoute === '/cardPage'" 
+      :post="state.currentPost"
+    />
     <BoardPage 
       v-if="state.currentRoute === '/boardPage'" 
       @navigate="handleRouteChange"
-      :newPost="state.newPost"
       :loginForm="state.loginForm"
     />
     <BoardWrite 
@@ -56,7 +57,6 @@ export default {
   setup(){
     const state = reactive({
       currentRoute: '/',
-      newPost: null,
       loginForm: null,
       currentPost: null
     });
@@ -71,9 +71,7 @@ export default {
       }
     };
 
-    const handlePostSubmit = (post) => {
-      // 새 글 데이터를 state에 저장하고 BoardPage로 이동
-      state.newPost = post;
+    const handlePostSubmit = () => {
       handleRouteChange('/boardPage');
     };
 

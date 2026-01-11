@@ -1,16 +1,21 @@
 <template>
   <div class="card-page">
     <div class="card-container">
-        <div v-for="item in items" :key="item.id">
+        <div v-for="post in posts" :key="post.id">
             <Card class="card-item">
                 <template #header>
-                <img alt="Card Header" src="https://via.placeholder.com/400x200" />
+                <div v-if="post.imagedata" class="detail-image-wrap">
+                  <img :src="post.imagedata" alt="post image" class="detail-image" />
+                </div>
                 </template>
                 <template #title>
-                    {{ item.title }}
+                    {{ post.title }}
                 </template>
                 <template #content>
-                    <p>{{ item.content }}</p>
+                    <p>{{ post.content }}</p>
+                </template>
+                <template #footer>
+                    <p>{{ post.createtime }}</p>
                 </template>
             </Card>
         </div>
@@ -19,22 +24,51 @@
 </template>
 
 <script>
+import { onMounted, ref } from 'vue';
 import Card from 'primevue/card';
-
+import api from "../axios"
 
 export default {
   name: 'CardPage',
   components: {
     Card
   },
-  data(){
-    return {
-      items: [
-        { id: 1, title: 'Item 1', content: 'Content 1' },
-        { id: 2, title: 'Item 2', content: 'Content 2' },
-        { id: 3, title: 'Item 3', content: 'Content 3' }
-      ]
-    }
+  setup() {
+    const posts = ref([]);
+
+    // 샘플 게시글 데이터
+    const initializePosts = () => {
+      api.get('/api/Board/AllBoard').then(response => {
+        if (response.status === 200) {
+          for (let i = 0; i < response.data.length; i++) {
+            const post_data = response.data[i];
+            const item = post_data.data || post_data;
+            if (item && item.imagedata) {
+              console.log(item.imagedata);
+              const img = item.imagedata;
+              if (typeof img === 'string' && !img.startsWith('data:')) {
+                item.imagedata = 'data:image/jpeg;base64,' + img;
+              }
+            }
+          }
+          posts.value = response.data;
+        } else {
+          // fallback or sample data could go here
+        }
+      }).catch(error => {
+        if (error && error.response) {
+          console.error('Board list fetch failed:', error.response.status, error.response.headers, error.response.data);
+        } else {
+          console.error('Board list fetch error:', error);
+        }
+      });
+    };
+
+    onMounted(() => {
+      initializePosts();
+    });
+
+    return { posts };
   }
 };
 </script>
@@ -60,6 +94,9 @@ export default {
 .card-item {
   width: 100%;
 }
+
+.detail-image-wrap { margin-bottom: 1rem; }
+.detail-image { max-width: 100%; height: auto; border-radius: 6px; display: block; }
 
 @media (min-width: 768px) {
   .card-container {

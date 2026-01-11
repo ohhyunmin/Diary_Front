@@ -61,8 +61,6 @@ export default {
       if (props.post && props.post.id) {
         api.get('/api/Board/' + props.post.id).then(response => {
           if (response.status === 200) {
-            console.log(response.data);
-            // normalize imagedata: if server returns base64 without data: prefix
             if (response.data.imagedata) {
               const img = response.data.imagedata;
               if (typeof img === 'string' && !img.startsWith('data:')) {
