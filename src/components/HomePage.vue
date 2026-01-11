@@ -44,6 +44,7 @@ import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import api from '../axios'
+import koLocale from '@fullcalendar/core/locales/ko';
 
 export default {
   name: 'HomePage',
@@ -149,6 +150,8 @@ export default {
 
     const calendarOptions = ref({
       plugins: [dayGridPlugin, interactionPlugin],
+      locales: [koLocale],
+      locale: 'ko',
       initialView: 'dayGridMonth',
       headerToolbar: {
         left: 'prev,next today',
