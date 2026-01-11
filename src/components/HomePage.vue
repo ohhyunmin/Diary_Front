@@ -43,6 +43,7 @@ import Card from 'primevue/card';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import api from '../axios'
 
 export default {
   name: 'HomePage',
@@ -51,6 +52,8 @@ export default {
     FullCalendar
   },
   setup() {
+    const posts = ref([]);
+    const events = ref([]);
     const images = ref([
       {
         url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1200&h=600&fit=crop',
@@ -100,6 +103,42 @@ export default {
 
     onMounted(() => {
       startTimer();
+      api.get('/api/Board/AllBoard').then(response => {
+        if (response.status === 200) {
+          for (let i = 0; i < response.data.length; i++) {
+            const post_data = response.data[i];
+            const item = post_data.data || post_data;
+            if (item && item.imagedata) {
+              const img = item.imagedata;
+              if (typeof img === 'string' && !img.startsWith('data:')) {
+                item.imagedata = 'data:image/jpeg;base64,' + img;
+              }
+            }
+          }
+          posts.value = response.data;
+
+          // convert posts to FullCalendar events using `createtime`
+          events.value = posts.value.map(p => {
+            let start = null;
+            if (p.createtime) {
+              const d = new Date(p.createtime);
+              start = !isNaN(d) ? d.toISOString() : p.createtime;
+            }
+            return {
+              id: p.id,
+              title: p.title || '제목 없음',
+              start: start,
+              allDay: true,
+              color: '#42b983'
+            };
+          });
+
+          // ensure calendarOptions is updated
+          calendarOptions.value.events = [...events.value];
+        } else {
+          // fallback or sample data could go here
+        }
+      })
     });
 
     onUnmounted(() => {
@@ -107,20 +146,6 @@ export default {
         clearInterval(intervalId);
       }
     });
-
-    // FullCalendar 옵션
-    const events = ref([
-      {
-        title: '일정 1',
-        start: new Date(),
-        color: '#42b983'
-      },
-      {
-        title: '일정 2',
-        start: new Date(Date.now() + 86400000), // 내일
-        color: '#359268'
-      }
-    ]);
 
     const calendarOptions = ref({
       plugins: [dayGridPlugin, interactionPlugin],
